@@ -1,0 +1,29 @@
+D:/jichuangsai_2026/rtl/mac_core.v {1 {vlog -work work -vopt -stats=none D:/jichuangsai_2026/rtl/mac_core.v
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module mac_core
+
+Top level modules:
+	mac_core
+
+} {} {}} D:/jichuangsai_2026/rtl/serial_to_parallel.v {1 {vlog -work work -vopt -stats=none D:/jichuangsai_2026/rtl/serial_to_parallel.v
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module serial_to_parallel
+
+Top level modules:
+	serial_to_parallel
+
+} {} {}} D:/jichuangsai_2026/rtl/mac16_top.v {1 {vlog -work work -vopt -stats=none D:/jichuangsai_2026/rtl/mac16_top.v
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module mac16_top
+
+Top level modules:
+	mac16_top
+
+} {} {}} D:/jichuangsai_2026/rtl/parallel_to_serial.v {1 {vlog -work work -vopt -stats=none D:/jichuangsai_2026/rtl/parallel_to_serial.v
+QuestaSim-64 vlog 2024.1 Compiler 2024.02 Feb  1 2024
+-- Compiling module parallel_to_serial
+
+Top level modules:
+	parallel_to_serial
+
+} {} {}}
