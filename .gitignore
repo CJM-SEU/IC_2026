@@ -1,0 +1,8 @@
+# Icarus Verilog 临时文件
+*.vvp
+*.vcd
+*.log
+
+# 编辑器临时文件
+.vscode/
+*.swp
