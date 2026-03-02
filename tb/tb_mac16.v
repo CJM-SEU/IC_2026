@@ -40,8 +40,13 @@ module tb_mac16;
             data_en = 1'b0;
         end
     endtask
-    //test
+    
     // 5. 测试流程
+    // 生成波形文件 (关键！)
+    initial begin
+        $dumpfile("dump.vcd"); // 生成 dump.vcd 文件
+        $dumpvars(0, tb_mac16); // 记录所有信号
+    end
     initial begin
         // 初始化
         mode = 0; 
