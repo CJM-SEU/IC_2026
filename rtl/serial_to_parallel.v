@@ -28,10 +28,15 @@ module serial_to_parallel (
             shift_reg <= {shift_reg[14:0], serial_in};
     end
 
-    always @(posedge clk or negedge rst_n) begin
+    always @(negedge clk) begin
+        if (cnt == 4'd15 && data_en && data_valid)
+            shift_reg <= 16'd0;
+    end
+
+    always @(negedge clk or negedge rst_n) begin
         if (!rst_n)
             data_out <= 16'd0;
-        else if (data_en && (cnt == 4'd15))
+        else if (data_valid && (cnt == 4'd15))
             data_out <= shift_reg;
     end
 
