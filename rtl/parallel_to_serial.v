@@ -13,25 +13,34 @@ module parallel_to_serial (
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            cnt <= 5'd0;
+            cnt <= 5'd23;
             shift_reg <= 24'd0;
             busy <= 1'b0;
         end
-        else if (load_en) begin
+    end
+    always @(negedge clk or negedge rst_n) begin
+        if (load_en) begin
             shift_reg <= data_in;
-            cnt <= 5'd0;
+            cnt <= 5'd23;
             busy <= 1'b1;
         end
-        else if (busy) begin
-            if (cnt == 5'd23) begin
-                busy <= 1'b0;
+    end
+    always @(posedge clk or negedge rst_n) begin
+        if (busy )  begin
+            if (cnt == 5'd23 && !load_en) begin
                 cnt <= 5'd0;
             end
-            else begin
+        end
+    end
+    always @(posedge clk or negedge rst_n) begin
+        if (busy) begin
                 cnt <= cnt + 1'b1;
+            end
+    end
+    always @(negedge clk or negedge rst_n) begin
+        if (busy) begin
                 shift_reg <= {shift_reg[22:0], 1'b0};
             end
-        end
     end
 
     // serial_out 和 out_ready 在 always 块里赋值，所以必须是 reg
@@ -42,8 +51,14 @@ module parallel_to_serial (
         end
         else begin
             serial_out <= shift_reg[23];  // MSB 先出
-            out_ready <= busy;
+            //out_ready <= busy;
         end
     end
+    always @(negedge clk or negedge rst_n) begin
+        if (busy == 1&& cnt == 5'd23 && !load_en) begin
+            busy <= 1'b0;
+        end
+    end
+    
 
 endmodule

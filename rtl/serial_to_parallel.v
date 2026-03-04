@@ -2,7 +2,7 @@ module serial_to_parallel (
     input wire clk,
     input wire rst_n,
     input wire data_en,
-    input wire serial_in,
+    input wire data_in,
     output reg [15:0] data_out,
     output wire data_valid
 );
@@ -25,7 +25,7 @@ module serial_to_parallel (
         if (!rst_n)
             shift_reg <= 16'd0;
         else if (data_en)
-            shift_reg <= {shift_reg[14:0], serial_in};
+            shift_reg <= {shift_reg[14:0], data_in};
     end
 
     always @(negedge clk) begin
