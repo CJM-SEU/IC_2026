@@ -5,7 +5,7 @@ module tb_serial_to_parallel;
     // 1. 定义信号
     reg data_en, serial_in, clk, rst_n;
     wire [15:0] data_out;
-    wire data_valid;
+    
 
     // 2. 实例化被测模块
     serial_to_parallel serial_to_parallel_dut (
