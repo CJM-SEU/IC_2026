@@ -29,7 +29,7 @@ module serial_to_parallel (
     end
 
     always @(negedge clk) begin
-        if (cnt == 4'd15 && data_en && data_valid)
+        if (cnt == 4'd15 && data_en)
             shift_reg <= 16'd0;
     end
 
@@ -39,8 +39,7 @@ module serial_to_parallel (
         else if (data_valid && (cnt == 4'd15))
             data_out <= shift_reg;
     end
-
-    // 关键：data_valid 是 wire，用 assign 赋值
-    assign data_valid = (cnt == 4'd15) && data_en;
-
+    
+    assign data_valid = (cnt == 4'd15 && data_en);
+    
 endmodule

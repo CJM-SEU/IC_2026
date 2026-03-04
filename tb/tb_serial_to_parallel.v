@@ -3,7 +3,7 @@
 module tb_serial_to_parallel;
 
     // 1. 定义信号
-    reg data_en, serial_in, clk, rst_n;
+    reg data_en, data_in, clk, rst_n;
     wire [15:0] data_out;
     wire data_valid;
 
@@ -12,7 +12,7 @@ module tb_serial_to_parallel;
         .clk(clk),
         .rst_n(rst_n),
         .data_en(data_en),
-        .serial_in(serial_in),
+        .data_in(data_in),
         .data_out(data_out),
         .data_valid(data_valid)
     );
@@ -23,17 +23,16 @@ module tb_serial_to_parallel;
 
     // 4. 串行发送任务 (同时驱动 inA )
     task send_data;
-        input [15:0] data_in;
+        input [15:0] serial_in;
         integer i;
         begin
+            @ (posedge clk);
             data_en = 1'b1;
             for (i = 15; i >= 0; i = i - 1) begin
-                @(negedge clk);
-                serial_in = data_in[i];
+                data_in = serial_in[i];
+                @(posedge clk);   
             end
-            #10;
-            serial_in = 0;
-            #5;
+            data_in = 0;
             data_en = 1'b0;
         end
     endtask
@@ -47,7 +46,7 @@ module tb_serial_to_parallel;
     initial begin
         // 初始化 
         rst_n = 0; 
-        serial_in = 0; 
+        data_in = 0; 
         data_en = 0;
 
         // 复位 (2 个时钟周期后置高)
