@@ -55,7 +55,7 @@ module tb_parallel_to_serial;
 
         // 测试用例 1: 输入 2
         $display("=== Test Case 1: Send Data 24'd2 ===");
-        load_data(24'd2);
+        load_data(24'b110000000000000000000011);
         
         // 等待串行输出完成 (24 个时钟周期 + 余量)
         for (i = 0; i < 30; i = i + 1) begin
@@ -66,7 +66,7 @@ module tb_parallel_to_serial;
         
         // 测试用例 2: 输入 24'd8
         $display("=== Test Case 2: Send Data 24'd8 ===");
-        load_data(24'd8);
+        load_data(24'b110000000000000000000011);
         
         for (i = 0; i < 30; i = i + 1) begin
             @(posedge clk);
@@ -76,7 +76,7 @@ module tb_parallel_to_serial;
         
         // 测试用例 3: 输入 24'd14
         $display("=== Test Case 3: Send Data 24'd14 ===");
-        load_data(24'd14);
+        load_data(24'b110000000000000000000011);
         
         for (i = 0; i < 30; i = i + 1) begin
             @(posedge clk);
@@ -86,7 +86,7 @@ module tb_parallel_to_serial;
         
         // 测试用例 4: 输入 24'd116 (全 0)
         $display("=== Test Case 4: Send Data 24'd116 ===");
-        load_data(24'd116);
+        load_data(24'b110000000000000000000011);
         
         for (i = 0; i < 30; i = i + 1) begin
             @(posedge clk);

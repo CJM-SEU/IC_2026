@@ -1,0 +1,43 @@
+实现快速乘法器组合逻辑，要实现的功能如下：
+输入为两个16位有符号数，输出32位相乘结果。要求采用Booth编码和Wallace树型结构。
+计算例子：
+0110000010000000 * 1000000000000001 = 11001111110000000110000010000000
+(24704) * (-32767) = (-809475968)
+
+#顶层模块名为mul_tc_16_16，输入输出功能定义：#
+
+名称	方向	位宽	描述
+a	I	16	输入数据，二进制补码
+b	I	16	输入数据，二进制补码
+product	O	32	输出乘积a * b，二进制补码
+
+
+##8个 二位booth乘法
+#bit2booth.v#
+    input [15:0] a,		#乘数a
+    input [2:0] b_3bit,		#乘数b的3位
+    input [3:0] number,	#看乘数b的哪一位，0 2 4 6 8 10 12 14 .....
+    output reg [31:0] part_mul,	#部分积
+    output reg booth_c	#进位
+
+##32个 wallace tree 8个输入，还有五个进位booth_c
+#wallace.v#
+    input part_mul_0,		#部分积的某一位
+    input part_mul_1,
+    input part_mul_2,
+    input part_mul_3,
+    input part_mul_4,
+    input part_mul_5,
+    input part_mul_6,
+    input part_mul_7,
+    input [5:0] c_in,		#输入进位
+    output [4:0] c_out,		#输出进位
+    output wallace_c,		#最终输出
+    output wallace_s
+
+#32位加法器
+#adder32#
+    input [31:0] wallace_s,
+    input [31:0] wallace_c,
+    input booth_c,
+    output [31:0] product

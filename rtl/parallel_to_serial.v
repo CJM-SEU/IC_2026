@@ -59,6 +59,18 @@ module parallel_to_serial (
             busy <= 1'b0;
         end
     end
-    
+    always @(negedge clk or negedge rst_n)begin
+        if (!rst_n)begin
+            out_ready <= 1'b0;
+        end
+        else if (cnt == 5'd23 && !out_ready)begin
+            out_ready <= 1'b1;
+        end
+    end
+    always @(negedge clk or negedge rst_n)begin
+        if (cnt == 5'd0 && out_ready)begin
+            out_ready <= 1'b0;
+        end
+    end
 
 endmodule
