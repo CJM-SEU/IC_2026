@@ -3,8 +3,8 @@ module parallel_to_serial (
     input wire rst_n,
     input wire load_en,
     input wire [23:0] data_in,
-    output reg serial_out,      // reg 类型，
-    output reg out_ready        // reg 类型，
+    output reg serial_out,      
+    output reg out_ready        
 );
 
     reg [4:0] cnt;
