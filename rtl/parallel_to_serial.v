@@ -1,75 +1,53 @@
+`timescale 1ns/1ps
+
 module parallel_to_serial (
     input wire clk,
     input wire rst_n,
     input wire load_en,
     input wire [23:0] data_in,
-    output reg serial_out,      
-    output reg out_ready        
+    output reg serial_out,
+    output reg out_ready,
+    output reg out_done,
+    output wire in_ready
 );
 
-    reg [4:0] cnt;
+    reg [5:0] bits_left;
     reg [23:0] shift_reg;
     reg busy;
 
+    assign in_ready = ~busy;
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            cnt <= 5'd23;
+            bits_left <= 6'd0;
             shift_reg <= 24'd0;
             busy <= 1'b0;
-        end
-    end
-    always @(negedge clk or negedge rst_n) begin
-        if (load_en) begin
-            shift_reg <= data_in;
-            cnt <= 5'd23;
-            busy <= 1'b1;
-        end
-    end
-    always @(posedge clk or negedge rst_n) begin
-        if (busy )  begin
-            if (cnt == 5'd23 && !load_en) begin
-                cnt <= 5'd0;
-            end
-        end
-    end
-    always @(posedge clk or negedge rst_n) begin
-        if (busy) begin
-                cnt <= cnt + 1'b1;
-            end
-    end
-    always @(negedge clk or negedge rst_n) begin
-        if (busy) begin
-                shift_reg <= {shift_reg[22:0], 1'b0};
-            end
-    end
-
-    // serial_out 和 out_ready 在 always 块里赋值，所以必须是 reg
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
             serial_out <= 1'b0;
             out_ready <= 1'b0;
-        end
-        else begin
-            serial_out <= shift_reg[23];  // MSB 先出
-            //out_ready <= busy;
-        end
-    end
-    always @(negedge clk or negedge rst_n) begin
-        if (busy == 1&& cnt == 5'd23 && !load_en) begin
-            busy <= 1'b0;
-        end
-    end
-    always @(negedge clk or negedge rst_n)begin
-        if (!rst_n)begin
-            out_ready <= 1'b0;
-        end
-        else if (cnt == 5'd23 && !out_ready)begin
-            out_ready <= 1'b1;
-        end
-    end
-    always @(negedge clk or negedge rst_n)begin
-        if (cnt == 5'd0 && out_ready)begin
-            out_ready <= 1'b0;
+            out_done <= 1'b0;
+        end else begin
+            out_done <= 1'b0;
+
+            if (!busy) begin
+                serial_out <= 1'b0;
+                out_ready <= 1'b0;
+
+                if (load_en) begin
+                    shift_reg <= data_in;
+                    bits_left <= 6'd24;
+                    busy <= 1'b1;
+                end
+            end else begin
+                out_ready <= 1'b1;
+                serial_out <= shift_reg[23];
+                shift_reg <= {shift_reg[22:0], 1'b0};
+                bits_left <= bits_left - 1'b1;
+
+                if (bits_left == 6'd1) begin
+                    busy <= 1'b0;
+                    out_done <= 1'b1;
+                end
+            end
         end
     end
 

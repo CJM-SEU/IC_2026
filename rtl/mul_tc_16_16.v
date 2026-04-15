@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -10,23 +12,23 @@ module mul_tc_16_16(
     wire signed [31:0] part_mul_0,part_mul_1,part_mul_2,part_mul_3,part_mul_4,part_mul_5,part_mul_6,part_mul_7;
     wire [7:0] booth_c ;
     
-    //8¸ö ¶þÎ»booth³Ë·¨
-    bit2booth b0(a, {b[1:0],1'b0}, 0, part_mul_0, booth_c[0]);
-    bit2booth b1(a, b[3:1],     2, part_mul_1, booth_c[1]);
-    bit2booth b2(a, b[5:3],     4, part_mul_2, booth_c[2]);
-    bit2booth b3(a, b[7:5],     6, part_mul_3, booth_c[3]);
-    bit2booth b4(a, b[9:7],     8, part_mul_4, booth_c[4]);
-    bit2booth b5(a, b[11:9],    10,part_mul_5, booth_c[5]);
-    bit2booth b6(a, b[13:11],   12,part_mul_6, booth_c[6]);
-    bit2booth b7(a, b[15:13],   14,part_mul_7, booth_c[7]);
+    //8ï¿½ï¿½ ï¿½ï¿½Î»boothï¿½Ë·ï¿½
+    bit2booth b0(a, {b[1:0],1'b0}, 4'd0,  part_mul_0, booth_c[0]);
+    bit2booth b1(a, b[3:1],       4'd2,  part_mul_1, booth_c[1]);
+    bit2booth b2(a, b[5:3],       4'd4,  part_mul_2, booth_c[2]);
+    bit2booth b3(a, b[7:5],       4'd6,  part_mul_3, booth_c[3]);
+    bit2booth b4(a, b[9:7],       4'd8,  part_mul_4, booth_c[4]);
+    bit2booth b5(a, b[11:9],      4'd10, part_mul_5, booth_c[5]);
+    bit2booth b6(a, b[13:11],     4'd12, part_mul_6, booth_c[6]);
+    bit2booth b7(a, b[15:13],     4'd14, part_mul_7, booth_c[7]);
     
-    //ÖÐ¼äÖµ
+    //ï¿½Ð¼ï¿½Öµ
    // wire signed [31:0] test;
     //assign  test = part_mul_0 +part_mul_1+part_mul_2+part_mul_3+part_mul_4+part_mul_5+part_mul_6+part_mul_7+booth_c[0]+booth_c[1]+booth_c[2]+booth_c[3]+booth_c[4]+booth_c[5]+booth_c[6]+booth_c[7];
     
     wire [4:0]  c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31;
     wire [31:0] wallace_c, wallace_s;                                          
-    //32¸ö wallace tree 8¸öÊäÈë£¬»¹ÓÐÎå¸ö½øÎ»booth_c
+    //32ï¿½ï¿½ wallace tree 8ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»booth_c
     wallace w0 (part_mul_0[0], part_mul_1[0], part_mul_2[0], part_mul_3[0], part_mul_4[0], part_mul_5[0], part_mul_6[0], part_mul_7[0], booth_c[5:0],   c0[4:0], wallace_c[0], wallace_s[0]);
     wallace w1 (part_mul_0[1], part_mul_1[1], part_mul_2[1], part_mul_3[1], part_mul_4[1], part_mul_5[1], part_mul_6[1], part_mul_7[1], {c0[4:0],1'b0}, c1[4:0], wallace_c[1], wallace_s[1]);
     wallace w2 (part_mul_0[2], part_mul_1[2], part_mul_2[2], part_mul_3[2], part_mul_4[2], part_mul_5[2], part_mul_6[2], part_mul_7[2], {c1[4:0],1'b0}, c2[4:0], wallace_c[2], wallace_s[2]);
@@ -60,7 +62,7 @@ module mul_tc_16_16(
     wallace w30(part_mul_0[30],part_mul_1[30],part_mul_2[30],part_mul_3[30],part_mul_4[30],part_mul_5[30],part_mul_6[30],part_mul_7[30],{c29[4:0],1'b0},c30[4:0],wallace_c[30],wallace_s[30]);
     wallace w31(part_mul_0[31],part_mul_1[31],part_mul_2[31],part_mul_3[31],part_mul_4[31],part_mul_5[31],part_mul_6[31],part_mul_7[31],{c30[4:0],1'b0},c31[4:0],wallace_c[31],wallace_s[31]);
                                                                                                                                            
-    //32Î»¼Ó·¨Æ÷
+    //32Î»ï¿½Ó·ï¿½ï¿½ï¿½
     adder32 a0(wallace_s, {wallace_c[30:0],booth_c[6]}, booth_c[7], product);
     
 endmodule

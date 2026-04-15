@@ -1,85 +1,99 @@
-`timescale 100ps/1ps
+`timescale 1ns/1ps
 
 module tb_serial_to_parallel;
 
-    // 1. 定义信号
     reg data_en, data_in, clk, rst_n;
     wire [15:0] data_out;
     wire data_valid;
+    wire in_done;
 
-    // 2. 实例化被测模块
-    serial_to_parallel serial_to_parallel_dut (
+    reg [15:0] expected_q [0:15];
+    integer q_wr, q_rd;
+
+    serial_to_parallel dut (
         .clk(clk),
         .rst_n(rst_n),
         .data_en(data_en),
         .data_in(data_in),
         .data_out(data_out),
-        .data_valid(data_valid)
+        .data_valid(data_valid),
+        .in_done(in_done)
     );
 
-    // 3. 生成时钟 (1ns 周期 = 1GHz)
     initial clk = 0;
-    always #5 clk = ~clk;
+    always #0.5 clk = ~clk; // 1GHz
 
-    // 4. 串行发送任务 (同时驱动 inA )
     task send_data;
         input [15:0] serial_in;
         integer i;
         begin
-            @ (posedge clk);
-            data_en = 1'b1;
-            for (i = 15; i >= 0; i = i - 1) begin
-                data_in = serial_in[i];
-                @(posedge clk);   
-            end
-            data_in = 0;
             data_en = 1'b0;
+            for (i = 15; i >= 0; i = i - 1) begin
+                @(negedge clk);
+                data_en = 1'b1;
+                data_in = serial_in[i];
+            end
+            @(negedge clk);
+            data_en = 1'b0;
+            data_in = 1'b0;
         end
     endtask
-    
-    // 5. 测试流程
-    // 生成波形文件 (关键！)
-    initial begin
-        $dumpfile("dump.vcd"); // 生成 dump.vcd 文件
-        $dumpvars(0, tb_serial_to_parallel); // 记录所有信号
-    end
-    initial begin
-        // 初始化 
-        rst_n = 0; 
-        data_in = 0; 
-        data_en = 0;
 
-        // 复位 (2 个时钟周期后置高)
-        #20; 
-        rst_n = 1; 
-        #20;
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_serial_to_parallel);
 
-        // 测试用例 1: Mode 0, 输入 2 
-        $display("=== Test Case 1: Mode 0, Send Data 2 ");
+        rst_n = 1'b0;
+        data_en = 1'b0;
+        data_in = 1'b0;
+        q_wr = 0;
+        q_rd = 0;
+
+        #5;
+        rst_n = 1'b1;
+        repeat (4) @(posedge clk);
+
+        expected_q[q_wr] = 16'd2;   q_wr = q_wr + 1;
         send_data(16'd2);
-        #25;
-        //LOG("Test Case 1 Finished!");
-        // 测试用例 2: Mode 0, 输入 8
-        $display("=== Test Case 1: Mode 0, Send Data 8 ");
+
+        expected_q[q_wr] = 16'd8;   q_wr = q_wr + 1;
         send_data(16'd8);
-        #25;
-        // 测试用例 2: Mode 0, 输入 14
-        $display("=== Test Case 1: Mode 0, Send Data 14 ");
+
+        expected_q[q_wr] = 16'd14;  q_wr = q_wr + 1;
         send_data(16'd14);
-        #25;
-        // 测试用例 2: Mode 0, 输入 116
-        $display("=== Test Case 1: Mode 0, Send Data 116 ");
+
+        expected_q[q_wr] = 16'd116; q_wr = q_wr + 1;
         send_data(16'd116);
-        #25;
-        // 结束
-        $display("=== All Tests Finished! ===");
+
+        repeat (16) @(posedge clk);
+
+        if (q_rd != q_wr) begin
+            $display("ERROR: Not all expected samples observed. q_rd=%0d q_wr=%0d", q_rd, q_wr);
+            $fatal(1);
+        end
+
+        $display("=== tb_serial_to_parallel PASS ===");
         $finish;
     end
 
-    // 6. 日志监控 (在 Transcript 窗口显示输出)
-    always @(posedge clk) begin
-        $display("Time=%0t | Received: data_out=%d (0x%h), data_valid=%b", 
-                     $time, data_out, data_out, data_valid);
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            q_rd <= 0;
+        end else begin
+            if (data_valid) begin
+                if (!in_done) begin
+                    $display("ERROR: data_valid asserted without in_done");
+                    $fatal(1);
+                end
+
+                if (data_out !== expected_q[q_rd]) begin
+                    $display("ERROR: sample%0d mismatch. got=0x%04h exp=0x%04h", q_rd, data_out, expected_q[q_rd]);
+                    $fatal(1);
+                end
+
+                q_rd <= q_rd + 1;
+            end
+        end
     end
 
 endmodule

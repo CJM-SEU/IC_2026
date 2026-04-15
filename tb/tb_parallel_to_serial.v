@@ -1,108 +1,123 @@
-`timescale 100ps/1ps
+`timescale 1ns/1ps
 
 module tb_parallel_to_serial;
 
-    // 1. 定义信号
     reg clk, rst_n, load_en;
     reg [23:0] data_in;
-    wire serial_out, out_ready;
+    wire serial_out, out_ready, out_done;
 
-    // 2. 实例化被测模块
-    parallel_to_serial parallel_to_serial_dut (
+    reg [23:0] expected_q [0:15];
+    integer q_wr, q_rd;
+
+    reg [23:0] recv_word;
+    integer recv_bits;
+    reg out_ready_d;
+
+    parallel_to_serial dut (
         .clk(clk),
         .rst_n(rst_n),
         .load_en(load_en),
         .data_in(data_in),
         .serial_out(serial_out),
-        .out_ready(out_ready)
+        .out_ready(out_ready),
+        .out_done(out_done)
     );
 
-    // 3. 生成时钟 (1ns 周期 = 1GHz)
     initial clk = 0;
-    always #5 clk = ~clk;
+    always #0.5 clk = ~clk; // 1GHz
 
-    // 4. 并行加载任务
     task load_data;
         input [23:0] data_to_load;
         begin
-            @(posedge clk);
+            @(negedge clk);
             load_en = 1'b1;
             data_in = data_to_load;
-            @(posedge clk);
-            
+            @(negedge clk);
             load_en = 1'b0;
             data_in = 24'd0;
         end
     endtask
-    
-    // 5. 测试流程
+
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, tb_parallel_to_serial);
-    end
-    
-    integer i;
-    initial begin
-        // 初始化 
-        rst_n = 0; 
-        load_en = 0;
+
+        rst_n = 1'b0;
+        load_en = 1'b0;
         data_in = 24'd0;
+        q_wr = 0;
+        q_rd = 0;
+        recv_word = 24'd0;
+        recv_bits = 0;
+        out_ready_d = 1'b0;
 
-        // 复位 (2 个时钟周期后置高)
-        #20; 
-        rst_n = 1; 
-        #20;
+        #5;
+        rst_n = 1'b1;
+        repeat (4) @(posedge clk);
 
-        // 测试用例 1: 输入 2
-        $display("=== Test Case 1: Send Data 24'd2 ===");
-        load_data(24'b110000000000000000000011);
-        
-        // 等待串行输出完成 (24 个时钟周期 + 余量)
-        for (i = 0; i < 30; i = i + 1) begin
-            @(posedge clk);
+        expected_q[q_wr] = 24'hC00003; q_wr = q_wr + 1;
+        load_data(24'hC00003);
+        repeat (30) @(posedge clk);
+
+        expected_q[q_wr] = 24'h00ABCD; q_wr = q_wr + 1;
+        load_data(24'h00ABCD);
+        repeat (30) @(posedge clk);
+
+        expected_q[q_wr] = 24'hF0F0F0; q_wr = q_wr + 1;
+        load_data(24'hF0F0F0);
+        repeat (30) @(posedge clk);
+
+        if (q_rd != q_wr) begin
+            $display("ERROR: Not all expected frames observed. q_rd=%0d q_wr=%0d", q_rd, q_wr);
+            $fatal(1);
         end
-        
-        $display("Test Case 1 Finished!");
-        
-        // 测试用例 2: 输入 24'd8
-        $display("=== Test Case 2: Send Data 24'd8 ===");
-        load_data(24'b110000000000000000000011);
-        
-        for (i = 0; i < 30; i = i + 1) begin
-            @(posedge clk);
-        end
-        
-        $display("Test Case 2 Finished!");
-        
-        // 测试用例 3: 输入 24'd14
-        $display("=== Test Case 3: Send Data 24'd14 ===");
-        load_data(24'b110000000000000000000011);
-        
-        for (i = 0; i < 30; i = i + 1) begin
-            @(posedge clk);
-        end
-        
-        $display("Test Case 3 Finished!");
-        
-        // 测试用例 4: 输入 24'd116 (全 0)
-        $display("=== Test Case 4: Send Data 24'd116 ===");
-        load_data(24'b110000000000000000000011);
-        
-        for (i = 0; i < 30; i = i + 1) begin
-            @(posedge clk);
-        end
-        
-        $display("Test Case 4 Finished!");
-        
-        // 结束
-        $display("=== All Tests Finished! ===");
+
+        $display("=== tb_parallel_to_serial PASS ===");
         $finish;
     end
 
-    // 6. 日志监控 (在 Transcript 窗口显示输出)
-    always @(posedge clk) begin
-        $display("Time=%0t | Output: serial_out=%b, out_ready=%b", 
-                     $time, serial_out, out_ready);
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            out_ready_d <= 1'b0;
+            recv_word <= 24'd0;
+            recv_bits <= 0;
+            q_rd <= 0;
+        end else begin
+            out_ready_d <= out_ready;
+
+            if (!out_ready && serial_out !== 1'b0) begin
+                $display("ERROR: serial_out must be 0 when out_ready=0");
+                $fatal(1);
+            end
+
+            if (out_done && !out_ready) begin
+                $display("ERROR: out_done asserted while out_ready=0");
+                $fatal(1);
+            end
+
+            if (out_ready)
+                recv_word <= {recv_word[22:0], serial_out};
+
+            if (out_ready && !out_ready_d)
+                recv_bits <= 1;
+            else if (out_ready)
+                recv_bits <= recv_bits + 1;
+
+            if (!out_ready && out_ready_d) begin
+                if (recv_bits != 24) begin
+                    $display("ERROR: out_ready window mismatch. got=%0d exp=24", recv_bits);
+                    $fatal(1);
+                end
+
+                if (recv_word !== expected_q[q_rd]) begin
+                    $display("ERROR: frame%0d mismatch. got=0x%06h exp=0x%06h", q_rd, recv_word, expected_q[q_rd]);
+                    $fatal(1);
+                end
+
+                recv_bits <= 0;
+                q_rd <= q_rd + 1;
+            end
+        end
     end
 
 endmodule
