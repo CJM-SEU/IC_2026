@@ -2,6 +2,8 @@
 
 module tb_mac16_case_mode0;
 
+    // 分场景TB-Case1：mode=0，6组样例输入，逐帧比对24bit输出。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
 
@@ -77,6 +79,7 @@ module tb_mac16_case_mode0;
         input integer target;
         integer guard;
         begin
+            // 超时保护，防止等待输出时卡死
             guard = 0;
             while ((q_rd < target) && (guard < 2000)) begin
                 @(posedge clk);

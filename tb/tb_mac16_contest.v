@@ -2,6 +2,9 @@
 
 module tb_mac16_contest;
 
+    // 赛题验收TB：串行输入6组数据，依次执行
+    // Case1(mode=0)、Case2(mode=1)、Case3(mode 0->1 切换)并自动判定通过/失败。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
 
@@ -96,6 +99,7 @@ module tb_mac16_contest;
         input integer target_count;
         integer guard;
         begin
+            // 防止无限等待：若目标帧长期未收到则判失败
             guard = 0;
             while ((q_rd < target_count) && (guard < 3000)) begin
                 @(posedge clk);
@@ -214,7 +218,7 @@ module tb_mac16_contest;
         $finish;
     end
 
-    // 串行接收并按帧比对
+    // 串行接收并按帧比对（仅24bit完整帧计入比较）
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             out_ready_d <= 1'b0;

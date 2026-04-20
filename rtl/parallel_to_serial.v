@@ -11,6 +11,9 @@ module parallel_to_serial (
     output wire in_ready
 );
 
+    // load_en 装载24bit并启动发送；busy期间每拍送出1bit（MSB first）。
+    // out_ready=1 表示 serial_out 有效；空闲时 serial_out 固定为0。
+
     reg [5:0] bits_left;
     reg [23:0] shift_reg;
     reg busy;
@@ -33,8 +36,11 @@ module parallel_to_serial (
                 out_ready <= 1'b0;
 
                 if (load_en) begin
-                    shift_reg <= data_in;
-                    bits_left <= 6'd24;
+                    // 仅在空闲状态接受新帧，并在本拍直接输出MSB以缩短启动延迟。
+                    out_ready <= 1'b1;
+                    serial_out <= data_in[23];
+                    shift_reg <= {data_in[22:0], 1'b0};
+                    bits_left <= 6'd23;
                     busy <= 1'b1;
                 end
             end else begin

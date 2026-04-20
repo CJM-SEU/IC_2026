@@ -2,6 +2,9 @@
 
 module tb_mac16_case_mode_switch;
 
+    // 分场景TB-Case3：在第三组输入完成后执行 mode 0->1 切换。
+    // 本TB按当前实现口径处理切换边界，并在注释中标出对应假设。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
 

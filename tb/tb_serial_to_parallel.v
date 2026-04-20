@@ -2,6 +2,8 @@
 
 module tb_serial_to_parallel;
 
+    // 串并单元TB：按MSB-first输入16bit帧，检查 data_valid/in_done 和 data_out。
+
     reg data_en, data_in, clk, rst_n;
     wire [15:0] data_out;
     wire data_valid;
@@ -27,6 +29,7 @@ module tb_serial_to_parallel;
         input [15:0] serial_in;
         integer i;
         begin
+            // 逐bit发送一帧16bit数据
             data_en = 1'b0;
             for (i = 15; i >= 0; i = i - 1) begin
                 @(negedge clk);

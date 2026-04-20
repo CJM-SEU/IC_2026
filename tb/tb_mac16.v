@@ -2,6 +2,8 @@
 
 module tb_mac16;
 
+    // 主门禁TB：覆盖基础功能、mode切换、5拍输出启动约束、sticky carry语义。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
     reg data_en;
@@ -39,6 +41,7 @@ module tb_mac16;
 
     task reset_scoreboard;
         begin
+            // 与DUT模式语义一致的参考模型状态
             prev_prod_tb = 32'sd0;
             accum_tb = 24'd0;
         end
@@ -72,6 +75,7 @@ module tb_mac16;
         input [15:0] data_b;
         integer i;
         begin
+            // 以 MSB-first 方式连续送入16bit一帧
             data_en = 1'b0;
             for (i = 15; i >= 0; i = i - 1) begin
                 @(negedge clk);

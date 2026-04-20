@@ -9,6 +9,10 @@ module bit2booth(
     output reg [31:0] part_mul,
     output reg booth_c
     );
+
+    // Radix-4 Booth编码单元：
+    // 根据 b_3bit 选择 0, +/-A, +/-2A，并按 number 做位移。
+    // booth_c 用于补码取反路径的进位补偿。
     
     reg [31:0] a0;
     always @(*)	begin

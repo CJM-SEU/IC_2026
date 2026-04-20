@@ -2,6 +2,8 @@
 
 module tb_parallel_to_serial;
 
+    // 并串单元TB：检查空闲输出、电平窗口长度(24拍)和逐帧数据一致性。
+
     reg clk, rst_n, load_en;
     reg [23:0] data_in;
     wire serial_out, out_ready, out_done;
@@ -29,6 +31,7 @@ module tb_parallel_to_serial;
     task load_data;
         input [23:0] data_to_load;
         begin
+            // 在空闲窗口打一拍 load_en 装载一帧24bit数据
             @(negedge clk);
             load_en = 1'b1;
             data_in = data_to_load;

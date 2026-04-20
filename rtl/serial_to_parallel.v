@@ -10,6 +10,9 @@ module serial_to_parallel (
     output reg in_done
 );
 
+    // 当 data_en 连续有效时，每16拍拼出一帧并拉高 data_valid/in_done。
+    // 若 data_en 拉低，当前半帧会被丢弃并清空计数。
+
     reg [4:0] cnt;
     reg [15:0] shift_reg;
 
@@ -26,6 +29,7 @@ module serial_to_parallel (
 
             if (data_en) begin
                 if (cnt == 5'd15) begin
+                    // 最后一位到达，输出完整16bit并重新开始下一帧
                     data_out <= {shift_reg[14:0], data_in};
                     data_valid <= 1'b1;
                     in_done <= 1'b1;

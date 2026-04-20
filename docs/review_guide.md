@@ -21,6 +21,8 @@
 - 赛题文本: [3.22题目.md](../3.22题目.md)
 - 提交验收对照: [docs/contest_acceptance_report.md](contest_acceptance_report.md)
 - 验证门禁规范: [docs/verification_gate_spec.md](verification_gate_spec.md)
+- 顶层时序解读: [docs/mac16_top_timing_walkthrough.md](mac16_top_timing_walkthrough.md)
+- 顶层波形对照: [docs/mac16_top_waveform_guide.md](mac16_top_waveform_guide.md)
 - SDC说明: [docs/sdc_usage.md](sdc_usage.md)
 - 约束文件: [constraints/mac16_top.sdc](../constraints/mac16_top.sdc)
 

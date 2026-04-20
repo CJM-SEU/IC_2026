@@ -9,6 +9,8 @@ module para_carry_4bit(
     output [3:0] cout,
     output P_out
     );
+
+    // 4bit 并行前缀进位单元：输入 p/g 与 c0，输出每bit进位和组传播信号。
     
     assign cout[0] = g[0] | (p[0]&c0);
     

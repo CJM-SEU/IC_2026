@@ -16,6 +16,12 @@ module wallace(
     output wallace_c,
     output wallace_s
     );
+
+    // 单列 Wallace 压缩：
+    // 将当前列8个部分积位 + 来自低位列的进位压缩为：
+    // - wallace_s: 当前列和位
+    // - wallace_c: 送往高位列的进位位
+    // - c_out: 中间级连锁进位
 	
 	wire in10,in11,in13,in14,in21,in22,in31;
 	fulladder f00(part_mul_0,part_mul_1,part_mul_2,c_out[0],in10);

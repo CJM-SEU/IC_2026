@@ -2,6 +2,9 @@
 
 module tb_mac16_throughput;
 
+    // 吞吐TB：连续输入多帧，统计 in_done/cal_done/p2s_load/out_done 关系，
+    // 验证负载下结果链路是否保持有界时延与计数一致性。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
     reg data_en;
@@ -36,6 +39,7 @@ module tb_mac16_throughput;
         input drop_en_after;
         integer i;
         begin
+            // 可选择在该帧后拉低 data_en，用于构造帧间边界
             for (i = 15; i >= 0; i = i - 1) begin
                 @(negedge clk);
                 data_en = 1'b1;

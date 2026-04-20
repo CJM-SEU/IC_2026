@@ -2,6 +2,8 @@
 
 module tb_mac16_case_mode1;
 
+    // 分场景TB-Case2：mode=1，检查全状态累加输出序列。
+
     reg mode, inA, inB, clk, rst_n;
     wire sum_out, carry, out_ready;
 
@@ -122,6 +124,7 @@ module tb_mac16_case_mode1;
 
         repeat (2) @(posedge clk);
         rst_n = 1'b1;
+        // 先在mode=0稳定两个周期，再切到mode=1，避免上电切换瞬态干扰
         repeat (2) @(posedge clk);
         mode = 1'b1;
         repeat (2) @(posedge clk);
