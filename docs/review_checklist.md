@@ -71,7 +71,7 @@
 ## 8. 文档与约束一致性
 
 - [ ] 验证门禁文档与TB行为一致：[docs/verification_gate_spec.md](verification_gate_spec.md)
-- [ ] SDC说明与实际顶层一致：[docs/sdc_usage.md](sdc_usage.md) [constraints/mac16_top.sdc](../constraints/mac16_top.sdc)
+- [ ] SDC说明与实际顶层一致：[docs/sdc_usage.md](sdc_usage.md) [constraints/mac16.sdc](../constraints/mac16.sdc)
 - [ ] 提交验收说明已更新到最新实现：[docs/contest_acceptance_report.md](contest_acceptance_report.md)
 
 审阅结论记录：

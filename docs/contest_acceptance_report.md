@@ -97,7 +97,7 @@ iverilog -g2012 -o sim_tb_mac16_contest.vvp -s tb_mac16_contest rtl/*.v tb/tb_ma
 - Testbench：tb目录完整打包，重点附上三份分场景TB。
 - 仿真日志：每个TB保存独立log。
 - 波形：关键场景dump.vcd截图（输入结束到输出开始、mode切换、carry置位）。
-- 约束：constraints/mac16_top.sdc。
+- 约束：constraints/mac16.sdc。
 - 报告：按第5节条款逐条附证据。
 
 ## 7. 已知实现边界说明（建议写入答辩备注）

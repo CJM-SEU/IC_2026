@@ -1,17 +1,17 @@
 # SDC usage for IC_2026
 
 This project provides a baseline synthesis constraint file:
-- constraints/mac16_top.sdc
+- constraints/mac16.sdc
 
 ## Scope
-The SDC targets top module mac16_top and applies:
+The SDC targets top module mac16 and applies:
 - 1GHz core clock on port clk
 - Input/output delay budget for top-level IO
 - Basic output load
 - Async reset false path on rst_n
 
 ## Parameters to tune first
-Open constraints/mac16_top.sdc and adjust these variables for your flow:
+Open constraints/mac16.sdc and adjust these variables for your flow:
 - CLK_PERIOD_NS
 - CLK_UNCERTAINTY_NS
 - IN_MAX_DELAY_NS / IN_MIN_DELAY_NS
@@ -23,8 +23,8 @@ Use the SDC in your synthesis script after reading RTL and before compile/optimi
 
 Typical flow (tool-agnostic):
 1. read_verilog rtl/*.v
-2. current_design mac16_top
-3. read_sdc constraints/mac16_top.sdc
+2. current_design mac16
+3. read_sdc constraints/mac16.sdc
 4. compile/optimize
 5. report_timing / report_qor
 

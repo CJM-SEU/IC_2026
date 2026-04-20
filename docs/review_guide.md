@@ -24,7 +24,7 @@
 - 顶层时序解读: [docs/mac16_top_timing_walkthrough.md](mac16_top_timing_walkthrough.md)
 - 顶层波形对照: [docs/mac16_top_waveform_guide.md](mac16_top_waveform_guide.md)
 - SDC说明: [docs/sdc_usage.md](sdc_usage.md)
-- 约束文件: [constraints/mac16_top.sdc](../constraints/mac16_top.sdc)
+- 约束文件: [constraints/mac16.sdc](../constraints/mac16.sdc)
 
 ## 2. 推荐审阅顺序
 
