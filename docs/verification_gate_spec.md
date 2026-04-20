@@ -21,38 +21,79 @@
 1. tb_mac16
 - 文件：tb/tb_mac16.v
 - 覆盖：主功能、模式切换、时序窗口、结果比对、sticky carry。
+- 波形重点关注（模块视角）：
+  - `mac16_top`：`in_done -> out_ready` 启动延迟是否 <= 5clk；`out_ready` 是否严格 24 拍窗口。
+  - `mac_core`：`calc_en/mult_valid/cal_done` 脉冲对齐关系；`mode_d` 是否与乘法器输出拍对齐。
+  - `mac_core`：`sum_out` 在 mode0/mode1 下是否分别匹配“当前+上帧”和“累加”语义。
+  - `mac_core`：`carry` 是否满足溢出置位、非复位不清零（sticky）行为。
+  - `parallel_to_serial`：空闲时 `sum_out` 是否回 0，发送窗口内是否 MSB first。
 
 2. tb_mac16_throughput
 - 文件：tb/tb_mac16_throughput.v
 - 覆盖：连续流吞吐、装载到完成有界时延、计数一致性。
+- 波形重点关注（模块视角）：
+  - `mac16_top`：输入FIFO/结果FIFO 在连续输入下是否出现堆积失控或掉帧（可结合 `op_fifo_count/fifo_count` 观察）。
+  - `mac16_top`：`p2s_load` 与 `out_done` 的配对节奏是否稳定，是否存在重复下发或空发。
+  - `parallel_to_serial`：上一帧 `out_done` 到下一帧 `out_ready` 的间隔是否满足吞吐预期。
+  - 全链路：`in_done_count` 与 `out_done_count` 演进关系是否始终满足 `out <= in`。
 
 3. tb_serial_to_parallel
 - 文件：tb/tb_serial_to_parallel.v
 - 覆盖：16bit 串并转换、in_done/data_valid 协同、数据正确性。
+- 波形重点关注（模块视角）：
+  - `serial_to_parallel`：16 个输入 bit 后是否在同一拍拉高 `data_valid` 与 `in_done`。
+  - `serial_to_parallel`：`data_out` 位序是否为 MSB first 拼装结果。
+  - `serial_to_parallel`：`data_en` 中断时计数与移位寄存器是否按预期清空/重启。
 
 4. tb_parallel_to_serial
 - 文件：tb/tb_parallel_to_serial.v
 - 覆盖：24bit 并串发送窗口、空闲输出约束、逐帧比对。
+- 波形重点关注（模块视角）：
+  - `parallel_to_serial`：`load_en` 后是否立刻进入发送窗口，`out_ready` 是否连续保持 24 拍。
+  - `parallel_to_serial`：`serial_out` 是否按 MSB first 输出；窗口外是否固定为 0。
+  - `parallel_to_serial`：`out_done` 是否只在合法发送末尾出现，不应在空闲期冒脉冲。
 
 5. tb_csa32
 - 文件：tb/tb_csa32.v
 - 覆盖：csa32 位级正确性、低32位等效加法关系、随机回归。
+- 波形重点关注（模块视角）：
+  - `csa32`：位级关系是否满足 `s = x ^ y ^ z`。
+  - `csa32`：`c` 是否为多数函数左移一位（`carry_raw << 1`）的结果。
+  - `csa32`：`s + c` 的低 32 位是否等价于 `x + y + z` 的低 32 位。
 
 6. tb_mac16_case_mode0
 - 文件：tb/tb_mac16_case_mode0.v
 - 覆盖：赛题 Case1（mode=0）6组输入输出一致性。
+- 波形重点关注（模块视角）：
+  - `mac_core`：mode0 下 `last_prod` 是否逐帧更新，且 `sum_out = mult_result + last_prod(prev)`。
+  - `mac16_top`：每组输入完成后是否都触发一次完整 24bit 输出。
+  - `carry`：仅在低24位加法溢出时置位，未溢出帧不应误置位。
 
 7. tb_mac16_case_mode1
 - 文件：tb/tb_mac16_case_mode1.v
 - 覆盖：赛题 Case2（mode=1）6组输入输出一致性。
+- 波形重点关注（模块视角）：
+  - `mac_core`：`accum_reg` 是否逐帧累加 `mult_result[23:0]`，并与 `sum_out` 同步。
+  - `mac_core`：`last_prod` 在 mode1 路径不参与输出计算（防止模式串扰）。
+  - `carry`：发生一次溢出后是否保持 sticky=1，直到复位/清空事件。
 
 8. tb_mac16_case_mode_switch
 - 文件：tb/tb_mac16_case_mode_switch.v
 - 覆盖：赛题 Case3（mode 0->1）切换时序与结果一致性。
+- 波形重点关注（模块视角）：
+  - `mac16_top`：`mode` 翻转时全链路清空是否生效（输入/结果队列与输出状态复位）。
+  - `mac_core`：切换后 `mode_d` 对齐是否正确，避免“旧模式计算新结果”错拍。
+  - `carry`：模式切换后是否及时清零，再按新模式重新置位。
+  - 输出链路：切换边界若出现非24bit截断窗口，应被识别为边界行为，不计入有效帧比较。
 
 9. tb_mac16_contest（必跑）
 - 文件：tb/tb_mac16_contest.v
 - 覆盖：赛题三场景一次性综合验收，输出 Simulation Passed/Failed。
+- 波形重点关注（模块视角）：
+  - 全链路：Case1/Case2/Case3 三段切换处，`mode`、`carry`、`out_ready` 的边界行为是否连贯。
+  - `mac16_top`：长流程下调度脉冲（`calc_start/p2s_load`）是否存在丢脉冲或重复脉冲。
+  - `mac_core`：长流程下 `cal_done` 是否与每次有效乘法一一对应。
+  - 输出端：`sum_out` 串行帧与 `expected_q` 对齐，且仅完整 24bit 帧计入验收。
 
 ## 4. 断言列表
 

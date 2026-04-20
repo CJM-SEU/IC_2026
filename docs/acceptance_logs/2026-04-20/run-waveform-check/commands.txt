@@ -1,0 +1,9 @@
+iverilog -g2001 -o sim_tb_mac16.vvp -s tb_mac16 rtl/*.v tb/tb_mac16.v && vvp sim_tb_mac16.vvp
+iverilog -g2001 -o sim_tb_mac16_throughput.vvp -s tb_mac16_throughput rtl/*.v tb/tb_mac16_throughput.v && vvp sim_tb_mac16_throughput.vvp
+iverilog -g2001 -o sim_tb_serial_to_parallel.vvp -s tb_serial_to_parallel rtl/*.v tb/tb_serial_to_parallel.v && vvp sim_tb_serial_to_parallel.vvp
+iverilog -g2001 -o sim_tb_parallel_to_serial.vvp -s tb_parallel_to_serial rtl/*.v tb/tb_parallel_to_serial.v && vvp sim_tb_parallel_to_serial.vvp
+iverilog -g2001 -o sim_tb_csa32.vvp -s tb_csa32 rtl/*.v tb/tb_csa32.v && vvp sim_tb_csa32.vvp
+iverilog -g2001 -o sim_tb_case0.vvp -s tb_mac16_case_mode0 rtl/*.v tb/tb_mac16_case_mode0.v && vvp sim_tb_case0.vvp
+iverilog -g2001 -o sim_tb_case1.vvp -s tb_mac16_case_mode1 rtl/*.v tb/tb_mac16_case_mode1.v && vvp sim_tb_case1.vvp
+iverilog -g2001 -o sim_tb_case_sw.vvp -s tb_mac16_case_mode_switch rtl/*.v tb/tb_mac16_case_mode_switch.v && vvp sim_tb_case_sw.vvp
+iverilog -g2001 -o sim_tb_mac16_contest.vvp -s tb_mac16_contest rtl/*.v tb/tb_mac16_contest.v && vvp sim_tb_mac16_contest.vvp
