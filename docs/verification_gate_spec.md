@@ -4,13 +4,20 @@
 - 目的：为后续版本提供统一、可执行、可判定的 RTL 验证门禁标准。
 - 适用范围：
   - rtl 下 MAC 主链路相关模块
-  - tb 下四个核心测试平台
+  - tb 下全量验收测试平台
 - 门禁触发建议：
   - 每次提交涉及 rtl 或 tb 变更
   - 合并到主分支前
   - 版本打标前
 
-## 2. 门禁测试清单（必须全通过）
+## 2. 本轮固定决策
+1. `tb_mac16_contest.v` 定位为必跑项。
+2. 日常开发采用全量回归，不再区分最小门禁集。
+3. 验收资料采用双层结构：
+- 总览层：`docs/contest_acceptance_report.md`
+- 日志层：`docs/acceptance_logs/`（按日期和批次归档命令与日志）
+
+## 3. 门禁测试清单（全量必跑且必须全通过）
 1. tb_mac16
 - 文件：tb/tb_mac16.v
 - 覆盖：主功能、模式切换、时序窗口、结果比对、sticky carry。
@@ -27,7 +34,27 @@
 - 文件：tb/tb_parallel_to_serial.v
 - 覆盖：24bit 并串发送窗口、空闲输出约束、逐帧比对。
 
-## 3. 断言列表
+5. tb_csa32
+- 文件：tb/tb_csa32.v
+- 覆盖：csa32 位级正确性、低32位等效加法关系、随机回归。
+
+6. tb_mac16_case_mode0
+- 文件：tb/tb_mac16_case_mode0.v
+- 覆盖：赛题 Case1（mode=0）6组输入输出一致性。
+
+7. tb_mac16_case_mode1
+- 文件：tb/tb_mac16_case_mode1.v
+- 覆盖：赛题 Case2（mode=1）6组输入输出一致性。
+
+8. tb_mac16_case_mode_switch
+- 文件：tb/tb_mac16_case_mode_switch.v
+- 覆盖：赛题 Case3（mode 0->1）切换时序与结果一致性。
+
+9. tb_mac16_contest（必跑）
+- 文件：tb/tb_mac16_contest.v
+- 覆盖：赛题三场景一次性综合验收，输出 Simulation Passed/Failed。
+
+## 4. 断言列表
 
 ### 3.1 tb_mac16 断言
 1. 输入完成到输出开始延迟
@@ -107,28 +134,48 @@
 - 规则：仿真结束前，q_rd 必须等于 q_wr。
 - 失败信息：ERROR: Not all expected frames observed
 
-## 4. 执行命令（建议固定脚本化）
+## 5. 执行命令（全量日常回归）
 在工程根目录执行：
 
 ```bash
-iverilog -g2012 -o sim_tb_mac16.vvp -s tb_mac16 rtl/*.v tb/tb_mac16.v && vvp sim_tb_mac16.vvp
-iverilog -g2012 -o sim_tb_mac16_throughput.vvp -s tb_mac16_throughput rtl/*.v tb/tb_mac16_throughput.v && vvp sim_tb_mac16_throughput.vvp
-iverilog -g2012 -o sim_tb_serial_to_parallel.vvp -s tb_serial_to_parallel rtl/*.v tb/tb_serial_to_parallel.v && vvp sim_tb_serial_to_parallel.vvp
-iverilog -g2012 -o sim_tb_parallel_to_serial.vvp -s tb_parallel_to_serial rtl/*.v tb/tb_parallel_to_serial.v && vvp sim_tb_parallel_to_serial.vvp
+iverilog -g2001 -o sim_tb_mac16.vvp -s tb_mac16 rtl/*.v tb/tb_mac16.v && vvp sim_tb_mac16.vvp
+iverilog -g2001 -o sim_tb_mac16_throughput.vvp -s tb_mac16_throughput rtl/*.v tb/tb_mac16_throughput.v && vvp sim_tb_mac16_throughput.vvp
+iverilog -g2001 -o sim_tb_serial_to_parallel.vvp -s tb_serial_to_parallel rtl/*.v tb/tb_serial_to_parallel.v && vvp sim_tb_serial_to_parallel.vvp
+iverilog -g2001 -o sim_tb_parallel_to_serial.vvp -s tb_parallel_to_serial rtl/*.v tb/tb_parallel_to_serial.v && vvp sim_tb_parallel_to_serial.vvp
+iverilog -g2001 -o sim_tb_csa32.vvp -s tb_csa32 rtl/*.v tb/tb_csa32.v && vvp sim_tb_csa32.vvp
+iverilog -g2001 -o sim_tb_case0.vvp -s tb_mac16_case_mode0 rtl/*.v tb/tb_mac16_case_mode0.v && vvp sim_tb_case0.vvp
+iverilog -g2001 -o sim_tb_case1.vvp -s tb_mac16_case_mode1 rtl/*.v tb/tb_mac16_case_mode1.v && vvp sim_tb_case1.vvp
+iverilog -g2001 -o sim_tb_case_sw.vvp -s tb_mac16_case_mode_switch rtl/*.v tb/tb_mac16_case_mode_switch.v && vvp sim_tb_case_sw.vvp
+iverilog -g2001 -o sim_tb_mac16_contest.vvp -s tb_mac16_contest rtl/*.v tb/tb_mac16_contest.v && vvp sim_tb_mac16_contest.vvp
 ```
 
-## 5. 门禁通过准则
+## 6. 门禁通过准则
 必须同时满足：
-1. 四个 testbench 均返回退出码 0。
+1. 第 3 节全量 testbench 均返回退出码 0。
 2. 日志中不出现 ERROR: 或 Fatal 类终止信息。
 3. tb_mac16 输出包含：=== tb_mac16 PASS ===。
 4. tb_serial_to_parallel 输出包含：=== tb_serial_to_parallel PASS ===。
 5. tb_parallel_to_serial 输出包含：=== tb_parallel_to_serial PASS ===。
 6. tb_mac16_throughput 输出包含：THROUGHPUT_STATUS full-throughput-under-continuous-stream。
+7. tb_csa32 输出包含：=== tb_csa32 PASS ===。
+8. tb_mac16_contest 输出包含：Simulation Passed。
 
 任一条件不满足即判定门禁失败。
 
-## 6. 失败分级与处理建议
+## 7. 验收文档与日志归档结构
+1. 总览层（单点阅读）
+- 文件：`docs/contest_acceptance_report.md`
+- 内容：条款对照、当前状态、结论摘要、风险与待办。
+
+2. 日志层（可追溯证据）
+- 目录：`docs/acceptance_logs/`
+- 推荐分层：`docs/acceptance_logs/YYYY-MM-DD/run-序号/`
+- 每次回归至少归档：
+  - `commands.txt`：本次执行命令清单
+  - `tb_*.log`：每个 testbench 的原始输出
+  - `summary.md`：本次通过/失败摘要与问题定位
+
+## 8. 失败分级与处理建议
 - P0（阻断发布）
   - 功能结果错误
   - 延迟超过 5 拍
@@ -142,7 +189,7 @@ iverilog -g2012 -o sim_tb_parallel_to_serial.vvp -s tb_parallel_to_serial rtl/*.
 - P2（可跟踪优化）
   - 非功能性信息告警，不影响断言通过
 
-## 7. 维护规则
+## 9. 维护规则
 1. 新增或修改断言时，必须同步更新本规范文档与对应 testbench。
 2. 变更说明写入 docs/change_logs，规范主文档只维护“稳定门禁条款”，不记录过程性细节。
-3. 若未来引入 CI，要求将第 4 节命令固化为流水线步骤，并严格使用第 5 节作为唯一判定口径。
+3. 若未来引入 CI，要求将第 5 节命令固化为流水线步骤，并严格使用第 6 节作为唯一判定口径。
